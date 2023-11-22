@@ -72,7 +72,6 @@ app.register(async (fastify) => {
     "/real-time-current-monitoring",
     { websocket: true },
     (connection /* SocketStream */, req /* FastifyRequest */) => {
-      // Send data to the client every 5 seconds
       const interval = setInterval(async () => {
         try {
           const data = await fetchDataFromMongoDB(collection);
