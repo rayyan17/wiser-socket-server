@@ -1,0 +1,6 @@
+node_modules
+.vscode
+shenanigans
+install_nvm.sh
+dev
+.env

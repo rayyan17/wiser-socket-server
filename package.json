@@ -1,0 +1,19 @@
+{
+  "name": "wiser-socket-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Saad Awan",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/websocket": "^8.2.0",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.24.3",
+    "mongodb": "^6.3.0"
+  }
+}
