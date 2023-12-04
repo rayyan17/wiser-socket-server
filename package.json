@@ -11,6 +11,7 @@
   "author": "Saad Awan",
   "license": "ISC",
   "dependencies": {
+    "@fastify/cors": "^8.4.1",
     "@fastify/websocket": "^8.2.0",
     "dotenv": "^16.3.1",
     "fastify": "^4.24.3",

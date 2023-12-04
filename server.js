@@ -1,11 +1,16 @@
 import fastify from "fastify";
 import fastifyWebsocket from "@fastify/websocket";
+import fastifyCors from '@fastify/cors'; // Import the fastify-cors plugin
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 dotenv.config();
 const app = fastify();
 app.register(fastifyWebsocket, {
   options: { maxPayload: 1048576 },
+});
+app.register(fastifyCors, {
+  origin: '*',
+  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
 });
 const mongoUrl = process.env.MONGO_URI;
 const dbName = "test";
@@ -15,7 +20,7 @@ const connectToMongoDB = async () => {
   try {
     await client.connect();
     console.log("Connected to MongoDB");
-    return client.db(dbName).collection(collectionName);
+    return client.db(dbName);
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
     throw error;
@@ -26,7 +31,7 @@ const collection = await connectToMongoDB();
 
 const fetchDataFromMongoDB = async (collection) => {
   const currentTime = new Date();
-  const startTime = new Date(currentTime.getTime() - 10 * 1000); // 15 seconds ago
+  const startTime = new Date(currentTime.getTime() - 60 * 1000); // 15 seconds ago
   try {
     const result = await collection
       .aggregate([
@@ -67,7 +72,11 @@ const fetchDataFromMongoDB = async (collection) => {
   }
 };
 
+
 app.register(async (fastify) => {
+  app.get("/", async (request, reply) => {
+    reply.send("Welcome to the home page!");
+  });
   fastify.get(
     "/real-time-current-monitoring",
     { websocket: true },
