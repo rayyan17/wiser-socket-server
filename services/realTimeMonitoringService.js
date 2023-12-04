@@ -1,4 +1,4 @@
-export default async function fetchRealTimeCurrentData(db, macAddress) {
+export async function fetchRealTimeCurrentData(db, macAddress) {
   const currentTime = new Date();
   const startTime = new Date(currentTime.getTime() - 60 * 1000); // 15 seconds ago
   try {
@@ -7,8 +7,8 @@ export default async function fetchRealTimeCurrentData(db, macAddress) {
     const result = await collection
       .aggregate([
         {
-          $match: { created_at: { $gte: startTime, $lte: currentTime } },
-          mac: macAddress
+          $match: { created_at: { $gte: startTime, $lte: currentTime },mac: macAddress }
+          
         },
         {
           $project: {
@@ -30,7 +30,6 @@ export default async function fetchRealTimeCurrentData(db, macAddress) {
       .toArray();
 
     if (result.length === 0) {
-      console.log("No data found for the last 15 seconds.");
       return {
         results: "No data available.",
         status: "error",
@@ -40,6 +39,32 @@ export default async function fetchRealTimeCurrentData(db, macAddress) {
     return result[0];
   } catch (error) {
     console.error("Error fetching data from MongoDB:", error);
+    throw error;
+  }
+}
+
+export async function fetchMostRecentDataPoint(db, macAddress) {
+  try {
+    const collection = db.collection('cts');
+
+    const result = await collection
+      .find({ mac: macAddress })
+      .sort({ created_at: -1 })
+      .limit(1)
+      .toArray();
+
+    if (result.length === 0) {
+      console.log("No data found in cts collection.");
+      return {
+        timestamp: null,
+      };
+    }
+
+    return {
+      timestamp: result[0].created_at,
+    };
+  } catch (error) {
+    console.error("Error fetching most recent data from MongoDB:", error);
     throw error;
   }
 }
