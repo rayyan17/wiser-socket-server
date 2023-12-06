@@ -8,6 +8,7 @@ export async function fetchMachinesCurrentState(db, labId) {
 
   for (const machine of machines) {
     let state = null;
+    let timestamp = null;
 
     if (machine.nodeId) {
       try {
@@ -17,10 +18,11 @@ export async function fetchMachinesCurrentState(db, labId) {
         // Update the query to filter by state directly
         const ct = await db
           .collection("cts")
-          .findOne({ mac: macAddress, state: { $in: ["OFF", "IDLE"] } }, { state: 1, _id: 0 });
+          .findOne({ mac: macAddress, state: { $in: ["OFF", "IDLE"] } }, { state: 1,  created_at: 1,_id: 0 });
 
         if (ct) {
-          state = ct.state;
+          state = ct.state
+          timestamp = ct.created_at
         }
       } catch (error) {
         console.error("Error querying node or cts collection:", error);
@@ -28,6 +30,7 @@ export async function fetchMachinesCurrentState(db, labId) {
       const machineData = {
         machine: machine,
         state: state,
+        timestamp: timestamp
       };
 
       results.push(machineData);
