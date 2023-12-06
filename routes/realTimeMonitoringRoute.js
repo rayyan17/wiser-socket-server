@@ -1,4 +1,7 @@
-import { fetchRealTimeCurrentData, fetchMostRecentDataPoint } from "../services/realTimeMonitoringService.js";
+import {
+  fetchRealTimeCurrentData,
+  fetchMostRecentDataPoint,
+} from "../services/realTimeMonitoringService.js";
 
 export default function realTimeMonitoringRoute(fastify, db) {
   fastify.get(
@@ -15,19 +18,27 @@ export default function realTimeMonitoringRoute(fastify, db) {
 
           // Check if data is not received for the last 5 minutes
           if (data.results === "No data available.") {
-            const mostRecentData = await fetchMostRecentDataPoint(db, macAddress);
-            const timeDifference = currentTime - new Date(mostRecentData.timestamp);
-            console.log(timeDifference)
-            
+            const mostRecentData = await fetchMostRecentDataPoint(
+              db,
+              macAddress
+            );
+            const timeDifference =
+              currentTime - new Date(mostRecentData.timestamp);
 
             const fiveMinutesInMillis = 5 * 60 * 1000;
-            console.log(fiveMinutesInMillis)
 
             if (timeDifference > fiveMinutesInMillis) {
-              connection.socket.send(JSON.stringify({
-                alert: "No data received for the last 5 minutes. Last data at " + mostRecentData.timestamp,
-                status: "warning",
-              }));
+              connection.socket.send(
+                JSON.stringify({
+                  alert:
+                    "No data received for the last 5 minutes. Last data at " +
+                    mostRecentData.timestamp,
+                  status: "warning",
+                  average_current: 0.0,
+                  total_current: 0.0,
+                  timestamp: currentTime
+                })
+              );
             }
           } else {
             lastDataReceivedTime = currentTime;

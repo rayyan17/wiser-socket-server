@@ -1,6 +1,6 @@
 export async function fetchRealTimeCurrentData(db, macAddress) {
   const currentTime = new Date();
-  const startTime = new Date(currentTime.getTime() - 60 * 1000); // 15 seconds ago
+  const startTime = new Date(currentTime.getTime() - 100 * 1000); // 15 seconds ago
   try {
     const collection = db.collection('cts'); // Change the collection name to 'cts'
 
