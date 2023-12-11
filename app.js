@@ -17,6 +17,10 @@ app.register(fastifyCors, {
 
 const db = await connectToMongoDB();
 
+app.get("/", async (request, reply) => {
+  return { status: "OK", message: "Server is running and healthy!" };
+});
+
 app.register(async (fastify) => {
   realTimeAlertsMonitoringRoute(fastify, db);
   realTimeMonitoringRoute(fastify, db);
