@@ -16,15 +16,14 @@ app.register(fastifyCors, {
 });
 
 const db = await connectToMongoDB();
+const isProduction = process.env.NODE_ENV === "production";
+const prefix = isProduction ? "/api/ws" : "/api/ws/development"
 
-app.get("/", async (request, reply) => {
-  return { status: "OK", message: "Server is running and healthy!" };
+app.get(prefix, async (request, reply) => {
+  return { status: "OK", message: "Server is running and healthy!", prefix: prefix };
 });
 
 app.register(async (fastify) => {
-  const isDevelopment = process.env.NODE_ENV === "development";
-  const prefix = isDevelopment ? "/api/ws/development" : "/api/ws";
-
   await fastify.register(realTimeAlertsMonitoringRoute, { prefix, db });
   await fastify.register(realTimeMonitoringRoute, { prefix, db });
 });
