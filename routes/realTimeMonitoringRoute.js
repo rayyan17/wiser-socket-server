@@ -3,11 +3,12 @@ import {
   fetchMostRecentDataPoint,
 } from "../services/realTimeMonitoringService.js";
 
-export default function realTimeMonitoringRoute(fastify, db) {
+export default function realTimeMonitoringRoute(fastify, options, done) {
   fastify.get(
     "/current-monitoring/:macAddress",
     { websocket: true },
     (connection /* SocketStream */, req /* FastifyRequest */) => {
+      const { db } = options;
       const { macAddress } = req.params;
       let lastDataReceivedTime = new Date();
 
@@ -54,4 +55,5 @@ export default function realTimeMonitoringRoute(fastify, db) {
       });
     }
   );
+  done();
 }

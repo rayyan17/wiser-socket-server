@@ -18,6 +18,9 @@ app.register(fastifyCors, {
 const db = await connectToMongoDB();
 
 app.register(async (fastify) => {
-  realTimeAlertsMonitoringRoute(fastify, db);
-  realTimeMonitoringRoute(fastify, db);
+  const isDevelopment = process.env.NODE_ENV === "development";
+  const prefix = isDevelopment ? "/api/ws/development" : "/api/ws";
+
+  await fastify.register(realTimeAlertsMonitoringRoute, { prefix, db });
+  await fastify.register(realTimeMonitoringRoute, { prefix, db });
 });
