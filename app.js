@@ -17,6 +17,10 @@ app.register(fastifyCors, {
 
 const db = await connectToMongoDB();
 
+app.get("/", async (request, reply) => {
+  return { status: "OK", message: "Server is running and healthy!" };
+});
+
 app.register(async (fastify) => {
   const isDevelopment = process.env.NODE_ENV === "development";
   const prefix = isDevelopment ? "/api/ws/development" : "/api/ws";
