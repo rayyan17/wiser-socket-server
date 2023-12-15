@@ -23,7 +23,7 @@ app.get(prefix, async (request, reply) => {
   return { status: "OK", message: "Server is running and healthy!", prefix: prefix };
 });
 
-app.register(async (fastify) => {
-  await fastify.register(realTimeAlertsMonitoringRoute, { prefix, db });
-  await fastify.register(realTimeMonitoringRoute, { prefix, db });
-});
+//app.register(async (fastify) => {
+  app.register(realTimeAlertsMonitoringRoute, { prefix, db });
+  app.register(realTimeMonitoringRoute, { prefix, db });
+//});
