@@ -1,11 +1,12 @@
 import { fetchMachinesCurrentState } from "../services/realTimeAlertsService.js";
 // ... (other imports)
 
-export default function realTimeAlertsMonitoringRoute(fastify, db) {
+export default function realTimeAlertsMonitoringRoute(fastify, options, done) {
   fastify.get(
     "/machine-state-monitoring/:labId",
     { websocket: true },
     async (connection /* SocketStream */, req /* FastifyRequest */) => {
+       const { db } = options;
       const { labId } = req.params;
 
       const interval = setInterval(async () => {
@@ -22,4 +23,5 @@ export default function realTimeAlertsMonitoringRoute(fastify, db) {
       });
     }
   );
+  done();
 }

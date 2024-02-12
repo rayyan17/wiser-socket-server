@@ -1,13 +1,16 @@
 import {
   fetchRealTimeCurrentData,
   fetchMostRecentDataPoint,
+  fetchRealTimeAmbientData,
+  fetchRealTimeThermisterData
 } from "../services/realTimeMonitoringService.js";
 
-export default function realTimeMonitoringRoute(fastify, db) {
+export default function realTimeMonitoringRoute(fastify, options, done) {
   fastify.get(
     "/current-monitoring/:macAddress",
     { websocket: true },
     (connection /* SocketStream */, req /* FastifyRequest */) => {
+      const { db } = options;
       const { macAddress } = req.params;
       let lastDataReceivedTime = new Date();
 
@@ -36,7 +39,7 @@ export default function realTimeMonitoringRoute(fastify, db) {
                   status: "warning",
                   average_current: 0.0,
                   total_current: 0.0,
-                  timestamp: currentTime
+                  timestamp: currentTime,
                 })
               );
             }
@@ -54,4 +57,48 @@ export default function realTimeMonitoringRoute(fastify, db) {
       });
     }
   );
+
+  fastify.get(
+    "/ambient-monitoring/:macAddress",
+    { websocket: true },
+    (connection /* SocketStream */, req /* FastifyRequest */) => {
+      const { db } = options;
+      const { macAddress } = req.params;
+
+      const interval = setInterval(async () => {
+        try {
+          const data = await fetchRealTimeAmbientData(db, macAddress);
+          connection.socket.send(JSON.stringify(data));
+        } catch (error) {
+          console.error("Error fetching data from MongoDB:", error);
+        }
+      }, 5000);
+
+      connection.socket.on("close", () => {
+        clearInterval(interval);
+      });
+    }
+  );
+  fastify.get(
+    "/thermister-monitoring/:macAddress",
+    { websocket: true },
+    (connection /* SocketStream */, req /* FastifyRequest */) => {
+      const { db } = options;
+      const { macAddress } = req.params;
+  
+      const interval = setInterval(async () => {
+        try {
+          const data = await fetchRealTimeThermisterData(db, macAddress);
+          connection.socket.send(JSON.stringify(data));
+        } catch (error) {
+          console.error("Error fetching data from MongoDB:", error);
+        }
+      }, 5000);
+  
+      connection.socket.on("close", () => {
+        clearInterval(interval);
+      });
+    }
+  );  
+  done();
 }
