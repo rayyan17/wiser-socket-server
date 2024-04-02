@@ -154,3 +154,98 @@ export async function fetchRealTimeThermisterData(db, macAddress) {
     throw error;
   }
 }
+
+
+export async function fetchRealTimeVibrationData(db, macAddress) {
+  const currentTime = new Date();
+  const startTime = new Date(currentTime.getTime() - 100 * 1000); 
+
+  try {
+    const collectionVibration = db.collection('vibrations');
+
+    const result = await collectionVibration
+      .aggregate([
+        {
+          $match: { 
+            mac: macAddress, 
+            created_at: { $gte: startTime, $lte: currentTime } 
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            vibration: 1,
+            timestamp: {
+              $dateToString: {
+                format: "%Y-%m-%dT%H:%M:%S.%LZ",
+                date: "$created_at",
+              },
+            },
+          },
+        },
+        {
+          $sort: { created_at: -1 }
+        },
+        {
+          $limit: 1,
+        },
+      ])
+      .toArray();
+
+    if (result.length === 0) {
+      return {
+        results: "No vibration data available for this Node.",
+        status: "error",
+      };
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error("Error fetching vibration data from MongoDB:", error);
+    throw error;
+  }
+}
+
+export async function fetchRealTimeCTData(db, macAddress) {
+  const currentTime = new Date();
+  const startTime = new Date(currentTime.getTime() - 100 * 1000); // 15 seconds ago
+  try {
+    const collection = db.collection('cts');
+
+    const result = await collection
+      .aggregate([
+        {
+          $match: { mac: macAddress, created_at: { $gte: startTime, $lte: currentTime } }
+        },
+        {
+          $project: {
+            _id: 0,
+            CT1: 1,
+            CT2: 1,
+            CT3: 1,
+            timestamp: {
+              $dateToString: {
+                format: "%Y-%m-%dT%H:%M:%S.%LZ",
+                date: "$created_at",
+              },
+            },
+          },
+        },
+      ])
+      .sort({ created_at: -1 })
+      .limit(1)
+      .toArray();
+
+    if (result.length === 0) {
+      return {
+        results: "No CT data available for this Node.",
+        status: "error",
+      };
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error("Error fetching CT data from MongoDB:", error);
+    throw error;
+  }
+}
