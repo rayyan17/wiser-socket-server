@@ -2,7 +2,9 @@ import {
   fetchRealTimeCurrentData,
   fetchMostRecentDataPoint,
   fetchRealTimeAmbientData,
-  fetchRealTimeThermisterData
+  fetchRealTimeThermisterData,
+  fetchRealTimeVibrationData,
+  fetchRealTimeCTData
 } from "../services/realTimeMonitoringService.js";
 
 export default function realTimeMonitoringRoute(fastify, options, done) {
@@ -99,6 +101,49 @@ export default function realTimeMonitoringRoute(fastify, options, done) {
         clearInterval(interval);
       });
     }
-  );  
+  );
+  fastify.get(
+    "/vibration-monitoring/:macAddress",
+    { websocket: true },
+    (connection /* SocketStream */, req /* FastifyRequest */) => {
+      const { db } = options;
+      const { macAddress } = req.params;
+      
+      const interval = setInterval(async () => {
+        try {
+          const data = await fetchRealTimeVibrationData(db, macAddress);
+          connection.socket.send(JSON.stringify(data));
+        } catch (error) {
+          console.error("Error fetching vibration data from MongoDB:", error);
+        }
+      }, 5000); // Interval set to 5 seconds, adjust as needed
+
+      connection.socket.on("close", () => {
+        clearInterval(interval);
+      });
+    }
+  );
+  fastify.get(
+    "/ct-monitoring/:macAddress",
+    { websocket: true },
+    (connection /* SocketStream */, req /* FastifyRequest */) => {
+      const { db } = options;
+      const { macAddress } = req.params;
+
+      const interval = setInterval(async () => {
+        try {
+          const data = await fetchRealTimeCTData(db, macAddress);
+          connection.socket.send(JSON.stringify(data));
+        } catch (error) {
+          console.error("Error fetching CT data from MongoDB:", error);
+        }
+      }, 5000); // Interval set to 5 seconds, adjust as needed
+
+      connection.socket.on("close", () => {
+        clearInterval(interval);
+      });
+    }
+  );
+
   done();
 }
