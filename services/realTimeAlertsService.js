@@ -217,7 +217,7 @@ export async function checkMachineStateAlerts(db, labId) {
     const alerts = [];
 
     const machines = await db.collection("machines").find({ labId: new ObjectId(labId) }).toArray();
-    console.log(machines);
+    // console.log(machines);
 
     for (const machine of machines) {
       const { nodeId } = machine;
@@ -229,13 +229,13 @@ export async function checkMachineStateAlerts(db, labId) {
       const nodes = await db.collection("nodes").find({ _id: nodeId }).toArray();
       for (const node of nodes) {
         const { mac: macAddress } = node;
-        console.log(macAddress);
+        // console.log(macAddress);
 
         const latestEntry = await db.collection("cts").findOne(
           { mac: macAddress },
           { sort: { created_at: -1 } }
         );
-        console.log(latestEntry);
+        // console.log(latestEntry);
 
         if (!latestEntry) {
           alerts.push({
@@ -249,11 +249,11 @@ export async function checkMachineStateAlerts(db, labId) {
         }
 
         const currentTime = new Date();
-        console.log(currentTime);
+        // console.log(currentTime);
         const entryTime = new Date(latestEntry.created_at);
-        console.log(entryTime);
+        // console.log(entryTime);
         const timeDifference = (currentTime - entryTime) / (1000 * 60);
-        console.log(timeDifference);
+        // console.log(timeDifference);
 
         if (timeDifference > 1) {
           alerts.push({
