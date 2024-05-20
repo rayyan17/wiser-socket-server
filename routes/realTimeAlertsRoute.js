@@ -1,4 +1,4 @@
-import { fetchMachinesCurrentState, fetchRealTimeCurrentAlert, fetchRealTimeAmbientTempAlert, fetchRealTimeAmbientHumidityAlert, checkMachineStateAlerts } from "../services/realTimeAlertsService.js";
+import { fetchMachinesCurrentState, fetchRealTimeAlerts, checkMachineStateAlerts } from "../services/realTimeAlertsService.js";
 // ... (other imports)
 
 export default function realTimeAlertsMonitoringRoute(fastify, options, done) {
@@ -25,42 +25,29 @@ export default function realTimeAlertsMonitoringRoute(fastify, options, done) {
   );
 
   fastify.get(
-    "/total-current-threshold-alert/:macAddress",
+    "/real-time-alert/:userId/:macAddress",
     { websocket: true },
     (connection /* SocketStream */, req /* FastifyRequest */) => {
       const { db } = options;
-      const { macAddress } = req.params;
+      const { userId, macAddress } = req.params;
   
       const interval = setInterval(async () => {
         try {
-          const currentTime = new Date();
-          const data = await fetchRealTimeCurrentAlert(db, macAddress);
+          const alertData = await fetchRealTimeAlerts(db, userId, macAddress);
   
-          if (data.results !== "No data available.") {
-            const totalCurrent = parseFloat(data.total_current);
-            const faultThreshold = parseFloat(data.fault_threshold);
+          if (alertData.currentAlert.status !== "error") {
+            connection.socket.send(JSON.stringify(alertData.currentAlert));
+          }
   
-            if (totalCurrent > faultThreshold) {
-              const alertData = {
-                alert: `Total current exceeded threshold. Current value: ${totalCurrent}`,
-                status: "alert",
-                total_current: totalCurrent,
-                timestamp: currentTime,
-              };
-              connection.socket.send(JSON.stringify(alertData));
+          if (alertData.ambientTempAlert.status !== "error") {
+            connection.socket.send(JSON.stringify(alertData.ambientTempAlert));
+          }
   
-              // Store the alert in the database
-              await db.collection("alerts").insertOne({
-                macAddress: macAddress,
-                alert: `Current`,
-                total_current: totalCurrent,
-                fault_threshold: faultThreshold,
-                timestamp: new Date() // Record the exact time of the alert storage
-              });
-            }
+          if (alertData.ambientHumidityAlert.status !== "error") {
+            connection.socket.send(JSON.stringify(alertData.ambientHumidityAlert));
           }
         } catch (error) {
-          console.error("Error fetching total current data from MongoDB:", error);
+          console.error("Error fetching real-time alert data:", error);
         }
       }, 5000);
   
@@ -69,56 +56,7 @@ export default function realTimeAlertsMonitoringRoute(fastify, options, done) {
       });
     }
   );
-
-  fastify.get(
-    "/real-time-ambient-temp-alert/:macAddress",
-    { websocket: true },
-    (connection /* SocketStream */, req /* FastifyRequest */) => {
-      const { db } = options;
-      const { macAddress } = req.params;
   
-      const interval = setInterval(async () => {
-        try {
-          const alertData = await fetchRealTimeAmbientTempAlert(db, macAddress);
-  
-          if (alertData.status !== "error") {
-            connection.socket.send(JSON.stringify(alertData));
-          }
-        } catch (error) {
-          console.error("Error fetching real-time ambient temperature alert:", error);
-        }
-      }, 5000);
-  
-      connection.socket.on("close", () => {
-        clearInterval(interval);
-      });
-    }
-  );
-
-  fastify.get(
-    "/real-time-ambient-humidity-alert/:macAddress",
-    { websocket: true },
-    (connection /* SocketStream */, req /* FastifyRequest */) => {
-      const { db } = options;
-      const { macAddress } = req.params;
-  
-      const interval = setInterval(async () => {
-        try {
-          const alertData = await fetchRealTimeAmbientHumidityAlert(db, macAddress);
-  
-          if (alertData.status !== "error") {
-            connection.socket.send(JSON.stringify(alertData));
-          }
-        } catch (error) {
-          console.error("Error fetching real-time ambient humidity alert:", error);
-        }
-      }, 5000);
-  
-      connection.socket.on("close", () => {
-        clearInterval(interval);
-      });
-    }
-  );
 
   fastify.get(
     "/machine-state-alerts/:labId",
@@ -126,6 +64,8 @@ export default function realTimeAlertsMonitoringRoute(fastify, options, done) {
     (connection /* SocketStream */, req /* FastifyRequest */) => {
       const { db } = options;
       const { labId } = req.params;
+
+      // console.log(labId)
   
       const sendAlerts = (alerts) => {
         for (const alert of alerts) {

@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const mongoUrl = process.env.MONGO_URI;
-const dbName = "test"; // You can make this dynamic if needed
+const dbName = "admin"; 
 
 export const connectToMongoDB = async () => {
   const client = new MongoClient(mongoUrl);
