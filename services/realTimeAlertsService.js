@@ -318,7 +318,7 @@ export async function checkMachineStateAlerts(db, labId) {
           await db.collection("alerts").insertOne(alert);
         }
       }
-      console.log(alerts)
+      // console.log(alerts)
     }
 
     return alerts;
