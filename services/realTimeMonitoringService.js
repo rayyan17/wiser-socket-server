@@ -126,7 +126,7 @@ export async function fetchRealTimeAmbientData(db, macAddress) {
         _id: 0,
         amb_temp: 1,
         ambient_humidity: 1,
-        created_at: {
+        timestamp: {
           $dateToString: {
             format: "%Y-%m-%dT%H:%M:%S.%LZ",
             date: "$created_at",
@@ -166,7 +166,7 @@ export async function fetchRealTimeThermisterData(db, macAddress) {
       .project({
         _id: 0,
         therm_temp: 1,
-        created_at: {
+        timestamp: {
           $dateToString: {
             format: "%Y-%m-%dT%H:%M:%S.%LZ",
             date: "$created_at",
