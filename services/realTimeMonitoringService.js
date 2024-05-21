@@ -1,6 +1,6 @@
 export async function fetchRealTimeCurrentData(db, macAddress) {
   const currentTime = new Date();
-  const startTime = new Date(currentTime.getTime() - 100 * 1000); // 15 seconds ago
+  const startTime = new Date(currentTime.getTime() - 100 * 1000);
   try {
     const collection = db.collection('cts');
 
@@ -10,7 +10,7 @@ export async function fetchRealTimeCurrentData(db, macAddress) {
         mac: macAddress,
       })
       .sort({ created_at: -1 })
-      .limit(1)
+      .limit(25)
       .project({
         _id: 0,
         average_current: { $round: ["$CT_Avg", 2] },
@@ -45,7 +45,7 @@ export async function fetchMostRecentDataPoint(db, macAddress) {
     const result = await collection
       .find({ mac: macAddress })
       .sort({ created_at: -1 })
-      .limit(1)
+      .limit(25)
       .project({
         _id: 0,
         timestamp: 1,
@@ -81,7 +81,7 @@ export async function fetchRealTimeAmbientData(db, macAddress) {
         created_at: { $gte: startTime, $lte: currentTime },
       })
       .sort({ created_at: -1 })
-      .limit(1)
+      .limit(25)
       .project({
         _id: 0,
         amb_temp: 1,
@@ -122,7 +122,7 @@ export async function fetchRealTimeThermisterData(db, macAddress) {
         created_at: { $gte: startTime, $lte: currentTime },
       })
       .sort({ created_at: -1 })
-      .limit(1)
+      .limit(25)
       .project({
         _id: 0,
         therm_temp: 1,
@@ -163,7 +163,7 @@ export async function fetchRealTimeVibrationData(db, macAddress) {
         created_at: { $gte: startTime, $lte: currentTime },
       })
       .sort({ created_at: -1 })
-      .limit(1)
+      .limit(25)
       .project({
         _id: 0,
         vibration: 1,
@@ -202,7 +202,7 @@ export async function fetchRealTimeCTData(db, macAddress) {
         created_at: { $gte: startTime, $lte: currentTime },
       })
       .sort({ created_at: -1 })
-      .limit(1)
+      .limit(25)
       .project({
         _id: 0,
         CT1: 1,
