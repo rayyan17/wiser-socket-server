@@ -223,20 +223,16 @@ async function saveAlert(db, userId, macAddress, machineName, message, type, tim
 
 export async function checkMachineStateAlerts(db, labId) {
   try {
-    const alerts = [];
-
     const lab = await db.collection("labs").findOne({ _id: new ObjectId(labId) });
     if (!lab) {
       console.log(`Lab with ID ${labId} not found.`);
-      return alerts;
+      return [];
     }
-    // console.log(lab)
 
-    const userId = lab.user_id;
-    // console.log(userId)
+    const userId = lab.user_id[0];
 
     const machines = await db.collection("machines").find({ labId: new ObjectId(labId) }).toArray();
-    // console.log(machines)
+    const alerts = [];
 
     for (const machine of machines) {
       const { nodeId, machineName } = machine;
@@ -270,8 +266,8 @@ export async function checkMachineStateAlerts(db, labId) {
           timestamp: new Date()
         };
 
-        alerts.push(alert);
         await db.collection("alerts").insertOne(alert);
+        alerts.push(alert);
         continue;
       }
 
@@ -290,8 +286,9 @@ export async function checkMachineStateAlerts(db, labId) {
           timestamp: new Date()
         };
 
-        alerts.push(alert);
         await db.collection("alerts").insertOne(alert);
+        alerts.push(alert);
+        continue;
       } else {
         const previousEntry = await db.collection("cts").findOne(
           { 
@@ -314,11 +311,11 @@ export async function checkMachineStateAlerts(db, labId) {
             timestamp: new Date()
           };
 
-          alerts.push(alert);
           await db.collection("alerts").insertOne(alert);
+          alerts.push(alert);
+          continue;
         }
       }
-      // console.log(alerts)
     }
 
     return alerts;

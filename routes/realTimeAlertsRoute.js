@@ -67,22 +67,26 @@ export default function realTimeAlertsMonitoringRoute(fastify, options, done) {
 
       // console.log(labId)
   
-      const sendAlerts = (alerts) => {
-        for (const alert of alerts) {
-          connection.socket.send(JSON.stringify(alert));
+      const sendAlert = async (alerts) => {
+        if (Array.isArray(alerts) && alerts.length > 0) {
+          for (const alert of alerts) {
+            connection.socket.send(JSON.stringify(alert));
+          }
         }
       };
-  
+
       const interval = setInterval(async () => {
         try {
           const alerts = await checkMachineStateAlerts(db, labId);
-          sendAlerts(alerts);
+          if (alerts && alerts.length > 0) {
+            await sendAlert(alerts);
+          }
         } catch (error) {
           console.error("Error checking machine state alerts:", error);
-          connection.socket.send(JSON.stringify({ type: "error", message: "An error occurred." }));
+          await sendAlert([{ type: "error", message: "An error occurred." }]);
         }
-      }, 5000); 
-  
+      }, 5000);
+
       connection.socket.on("close", () => {
         clearInterval(interval);
       });
