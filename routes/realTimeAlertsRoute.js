@@ -16,7 +16,7 @@ export default function realTimeAlertsMonitoringRoute(fastify, options, done) {
         } catch (error) {
           console.error("Error fetching machine data from MongoDB:", error);
         }
-      }, 5000);
+      }, 60000);
 
       connection.socket.on("close", () => {
         clearInterval(interval);
@@ -49,7 +49,7 @@ export default function realTimeAlertsMonitoringRoute(fastify, options, done) {
         } catch (error) {
           console.error("Error fetching real-time alert data:", error);
         }
-      }, 5000);
+      }, 60000);
   
       connection.socket.on("close", () => {
         clearInterval(interval);
@@ -85,7 +85,7 @@ export default function realTimeAlertsMonitoringRoute(fastify, options, done) {
           console.error("Error checking machine state alerts:", error);
           await sendAlert([{ type: "error", message: "An error occurred." }]);
         }
-      }, 5000);
+      }, 60000);
 
       connection.socket.on("close", () => {
         clearInterval(interval);

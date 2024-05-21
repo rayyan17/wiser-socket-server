@@ -44,7 +44,7 @@ export default function realTimeMonitoringRoute(fastify, options, done) {
         } catch (error) {
           console.error("Error fetching data from MongoDB:", error);
         }
-      }, 5000);
+      }, 60000);
 
       connection.socket.on("close", () => {
         clearInterval(interval);
@@ -66,7 +66,7 @@ export default function realTimeMonitoringRoute(fastify, options, done) {
         } catch (error) {
           console.error("Error fetching ambient data from MongoDB:", error);
         }
-      }, 5000);
+      }, 60000);
 
       connection.socket.on("close", () => {
         clearInterval(interval);
@@ -88,7 +88,7 @@ export default function realTimeMonitoringRoute(fastify, options, done) {
         } catch (error) {
           console.error("Error fetching thermister data from MongoDB:", error);
         }
-      }, 5000);
+      }, 60000);
 
       connection.socket.on("close", () => {
         clearInterval(interval);
@@ -110,7 +110,7 @@ export default function realTimeMonitoringRoute(fastify, options, done) {
         } catch (error) {
           console.error("Error fetching vibration data from MongoDB:", error);
         }
-      }, 5000);
+      }, 60000);
 
       connection.socket.on("close", () => {
         clearInterval(interval);
@@ -132,7 +132,7 @@ export default function realTimeMonitoringRoute(fastify, options, done) {
         } catch (error) {
           console.error("Error fetching CT data from MongoDB:", error);
         }
-      }, 5000);
+      }, 60000);
 
       connection.socket.on("close", () => {
         clearInterval(interval);
