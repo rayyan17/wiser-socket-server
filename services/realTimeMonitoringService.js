@@ -13,7 +13,6 @@ export async function fetchRealTimeCurrentData(db, macAddress) {
       .limit(25)
       .project({
         _id: 0,
-        average_current: { $round: ["$CT_Avg", 2] },
         total_current: { $round: ["$total_current", 2] },
         timestamp: {
           $dateToString: {
@@ -31,7 +30,10 @@ export async function fetchRealTimeCurrentData(db, macAddress) {
       };
     }
 
-    return result[0];
+    return {
+      results: result, 
+      status: "success",
+    };
   } catch (error) {
     console.error("Error fetching data from MongoDB:", error);
     throw error;
