@@ -1,6 +1,47 @@
+// export async function fetchRealTimeCurrentData(db, macAddress) {
+//   const currentTime = new Date();
+//   const startTime = new Date(currentTime.getTime() - 100 * 1000);
+//   try {
+//     const collection = db.collection('cts');
+
+//     const result = await collection
+//       .find({
+//         created_at: { $gte: startTime, $lte: currentTime },
+//         mac: macAddress,
+//       })
+//       .sort({ created_at: -1 })
+//       .limit(25)
+//       .project({
+//         _id: 0,
+//         total_current: { $round: ["$total_current", 2] },
+//         timestamp: {
+//           $dateToString: {
+//             format: "%Y-%m-%dT%H:%M:%S.%LZ",
+//             date: "$created_at",
+//           },
+//         },
+//       })
+//       .toArray();
+
+//     if (result.length === 0) {
+//       return {
+//         results: "No data available.",
+//         status: "error",
+//       };
+//     }
+
+//     return {
+//       results: result, 
+//       status: "success",
+//     };
+//   } catch (error) {
+//     console.error("Error fetching data from MongoDB:", error);
+//     throw error;
+//   }
+// }
 export async function fetchRealTimeCurrentData(db, macAddress) {
   const currentTime = new Date();
-  const startTime = new Date(currentTime.getTime() - 100 * 1000);
+  const startTime = new Date(currentTime.getTime() - 100 * 1000); 
   try {
     const collection = db.collection('cts');
 
@@ -10,7 +51,7 @@ export async function fetchRealTimeCurrentData(db, macAddress) {
         mac: macAddress,
       })
       .sort({ created_at: -1 })
-      .limit(25)
+      .limit(1)
       .project({
         _id: 0,
         total_current: { $round: ["$total_current", 2] },
@@ -30,10 +71,7 @@ export async function fetchRealTimeCurrentData(db, macAddress) {
       };
     }
 
-    return {
-      results: result, 
-      status: "success",
-    };
+    return result[0];
   } catch (error) {
     console.error("Error fetching data from MongoDB:", error);
     throw error;

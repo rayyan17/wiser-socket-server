@@ -8,6 +8,44 @@ import {
 } from "../services/realTimeMonitoringService.js";
 
 export default function realTimeMonitoringRoute(fastify, options, done) {
+  // fastify.get(
+  //   "/current-monitoring/:macAddress",
+  //   { websocket: true },
+  //   (connection, req) => {
+  //     const { db } = options;
+  //     const { macAddress } = req.params;
+  //     let lastDataReceivedTime = new Date();
+  //     let accumulatedData = []; // Define accumulatedData within the route handler scope
+  
+  //     const interval = setInterval(async () => {
+  //       try {
+  //         const currentTime = new Date();
+  //         const data = await fetchRealTimeCurrentData(db, macAddress);
+  
+  //         if (data.status === "error") {
+  //           // Handle error response
+  //           connection.socket.send(JSON.stringify(data));
+  //         } else {
+  //           // If there is new data, append it to accumulatedData
+  //           accumulatedData = accumulatedData.concat(data.results);
+  //         }
+  
+  //         // Send accumulatedData to the client
+  //         if (accumulatedData.length > 0) {
+  //           connection.socket.send(JSON.stringify(accumulatedData));
+  //           accumulatedData = []; // Clear accumulatedData after sending
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching data from MongoDB:", error);
+  //       }
+  //     }, 30000); // Refresh interval is 30 seconds
+  
+  //     connection.socket.on("close", () => {
+  //       clearInterval(interval);
+  //     });
+  //   }
+  // );
+
   fastify.get(
     "/current-monitoring/:macAddress",
     { websocket: true },
@@ -15,31 +53,36 @@ export default function realTimeMonitoringRoute(fastify, options, done) {
       const { db } = options;
       const { macAddress } = req.params;
       let lastDataReceivedTime = new Date();
-      let accumulatedData = []; // Define accumulatedData within the route handler scope
-  
+
       const interval = setInterval(async () => {
         try {
           const currentTime = new Date();
           const data = await fetchRealTimeCurrentData(db, macAddress);
-  
-          if (data.status === "error") {
-            // Handle error response
-            connection.socket.send(JSON.stringify(data));
+
+          if (data.results === "No data available.") {
+            const mostRecentData = await fetchMostRecentDataPoint(db, macAddress);
+            const timeDifference = currentTime - new Date(mostRecentData.timestamp);
+            const fiveMinutesInMillis = 5 * 60 * 1000;
+
+            if (timeDifference > fiveMinutesInMillis) {
+              connection.socket.send(
+                JSON.stringify({
+                  alert: "No data received for the last 5 minutes. Last data at " + mostRecentData.timestamp,
+                  status: "warning",
+                  total_current: 0.0,
+                  timestamp: currentTime,
+                })
+              );
+            }
           } else {
-            // If there is new data, append it to accumulatedData
-            accumulatedData = accumulatedData.concat(data.results);
-          }
-  
-          // Send accumulatedData to the client
-          if (accumulatedData.length > 0) {
-            connection.socket.send(JSON.stringify(accumulatedData));
-            accumulatedData = []; // Clear accumulatedData after sending
+            lastDataReceivedTime = currentTime;
+            connection.socket.send(JSON.stringify(data));
           }
         } catch (error) {
           console.error("Error fetching data from MongoDB:", error);
         }
-      }, 30000); // Refresh interval is 30 seconds
-  
+      }, 30000);
+
       connection.socket.on("close", () => {
         clearInterval(interval);
       });
